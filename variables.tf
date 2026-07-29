@@ -3,53 +3,27 @@ variable "private_dns_ptr_records" {
 Map of private_dns_ptr_records, attributes below
 Required:
     - name
+    - private_dns_zone_id
     - records
-    - resource_group_name
     - ttl
-    - zone_name
 Optional:
     - tags
 EOT
 
   type = map(object({
     name                = string
+    private_dns_zone_id = string
     records             = set(string)
-    resource_group_name = string
     ttl                 = number
-    zone_name           = string
     tags                = optional(map(string))
   }))
   validation {
     condition = alltrue([
       for k, v in var.private_dns_ptr_records : (
-        length(v.resource_group_name) <= 90
+        length(trimspace(v.name)) > 0
       )
     ])
-    error_message = "[from resourcegroups.ValidateName: invalid when len(value) > 90]"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.private_dns_ptr_records : (
-        !endswith(v.resource_group_name, ".")
-      )
-    ])
-    error_message = "[from resourcegroups.ValidateName: must not end with \".\"]"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.private_dns_ptr_records : (
-        length(v.resource_group_name) != 0
-      )
-    ])
-    error_message = "[from resourcegroups.ValidateName: invalid when len(value) == 0]"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.private_dns_ptr_records : (
-        length(v.zone_name) > 0
-      )
-    ])
-    error_message = "must not be empty"
+    error_message = "must not be empty or only whitespace"
   }
   validation {
     condition = alltrue([
